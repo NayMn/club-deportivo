@@ -1,9 +1,14 @@
 import express from "express";
 const app = express();
 
+
 app.get("/", (req, res) => {
-    res.send("titulo principal")
-});
+    res.send("pagina principal")
+})
+
+
+
+
 
 const PORT = process.env.PORT || 5000
 app.listen(PORT, () => {
