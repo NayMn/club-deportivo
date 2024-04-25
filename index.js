@@ -1,6 +1,8 @@
 import express from "express";
 import { writeFile } from "fs/promises";
-import { readFile } from "fs/promises"
+import { readFile } from "fs/promises";
+import { nanoid } from "nanoid";
+
 const __dirname = import.meta.dirname;
 
 const app = express();
@@ -17,20 +19,7 @@ console.log(pathFile) //comprobando
 app.use(express.static(__dirname + '/public'));
 
 
-// leer json (READ) 
-app.get("/deportes", async (req, res) => {
-    try {
-        const stringDeportes = await readFile(pathFile, 'utf8')
-        const deportes = JSON.parse(stringDeportes)
-        return res.json({ deportes })
-
-    } catch (error) {
-        console.log(error)
-        return res.status(500).json({ ok: false })
-    }
-});
-
-// CREATE 
+// ruta para crear nuevo deporte y guardarlo (CREATE )
 
 app.post("/deportes", async (req, res) => {
     try {
@@ -39,7 +28,8 @@ app.post("/deportes", async (req, res) => {
 
         const deporteNew = {
             deporte: deporte,
-            precio: precio
+            precio: precio,
+            id: nanoid()
         }
 
         const stringDeportes = await readFile(pathFile, 'utf8')
@@ -49,7 +39,7 @@ app.post("/deportes", async (req, res) => {
         // crear archivo con info nueva
         await writeFile(pathFile, JSON.stringify(deportes))
 
-        return res.json({ deporteNew })
+        return res.json({ deportes })
 
     } catch (error) {
         console.log(error)
@@ -57,6 +47,46 @@ app.post("/deportes", async (req, res) => {
     }
 });
 
+
+// obtener todos los deportes (READ) 
+app.get("/deportes", async (req, res) => {
+    try {
+        const stringDeportes = await readFile(pathFile, 'utf8')
+        const deportes = JSON.parse(stringDeportes)
+        return res.json({ deportes })
+
+    } catch (error) {
+        console.log(error)
+        return res.status(500).json({ ok: true })
+    }
+});
+
+
+// eliminar un deporte (delete)
+app.delete("/deportes/:id", async (req, res) => {
+    try {
+        const id = req.params.id
+        const stringDeportes = await readFile(pathFile, 'utf8')
+        const deportes = JSON.parse(stringDeportes)
+
+        const buscar = deportes.find(item => item.id === id)
+        if (!buscar) {
+            return res.status(404).json({ ok: false })
+        }
+
+        const filtro = deportes.filter((item) => item.id !== id)
+        await writeFile(pathFile, JSON.stringify(filtro))
+
+        return res.json(filtro)
+
+
+
+
+    } catch (error) {
+        console.log(error)
+        return res.status(500).json({ ok: true })
+    }
+})
 
 
 const PORT = process.env.PORT || 5000
