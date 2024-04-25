@@ -23,11 +23,11 @@ app.use(express.static(__dirname + '/public'));
 
 app.post("/deportes", async (req, res) => {
     try {
-        const deporte = req.body.deporte
+        const nombre = req.body.nombre
         const precio = req.body.precio
 
         const deporteNew = {
-            deporte: deporte,
+            nombre: nombre,
             precio: precio,
             id: nanoid()
         }
@@ -39,7 +39,7 @@ app.post("/deportes", async (req, res) => {
         // crear archivo con info nueva
         await writeFile(pathFile, JSON.stringify(deportes))
 
-        return res.json({ deportes })
+        return res.json({ message: 'Deporte agregado correctamente' });
 
     } catch (error) {
         console.log(error)
@@ -62,6 +62,34 @@ app.get("/deportes", async (req, res) => {
 });
 
 
+// modificar precios (update)
+
+app.put("/deportes/:nombre", async (req, res) => {
+    try {
+        const nombre = req.body.nombre
+        const precio = req.body.precio
+
+        const stringDeportes = await readFile(pathFile, 'utf8');
+        let deportes = JSON.parse(stringDeportes);
+
+        const index = deportes.findIndex(deportes => deportes.nombre === nombre);
+        if (index === -1) {
+            return res.status(404).json({ message: "deporte no encontrado" });
+        }
+
+        deportes[index].precio = precio;
+
+        await writeFile(pathFile, JSON.stringify(deportes));
+        return res.json(deportes[index]);
+
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ ok: false });
+    }
+});
+
+
+
 // eliminar un deporte (delete)
 app.delete("/deportes/:id", async (req, res) => {
     try {
@@ -78,9 +106,6 @@ app.delete("/deportes/:id", async (req, res) => {
         await writeFile(pathFile, JSON.stringify(filtro))
 
         return res.json(filtro)
-
-
-
 
     } catch (error) {
         console.log(error)
