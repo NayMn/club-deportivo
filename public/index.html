@@ -84,38 +84,30 @@
   function agregar() {
     let nombre = $('#nombre').val()
     let precio = $('#precio').val()
-    axios.post(`/deportes`, { nombre: nombre, precio: precio }).then((data) => {
-      alert(dat.data)
+    axios.post(`/agregar?nombre=${nombre}&precio=${precio}`).then((data) => {
+      alert(data.data)
       getData()
     })
     $('#exampleModal').modal('hide')
   }
 
   function edit() {
-    var nombre = $('#nombreModal').val();
-    var precio = $('#precioModal').val();
-    axios.put(`/deportes/${nombre}`, { precio: precio })
-      .then(function (response) {
-        alert(response.data.message);
-        getData();
-        $('#exampleModal').modal('hide');
-      })
-      .catch(function (error) {
-        console.log(error);
-      });
+    let nombre = $('#nombreModal').val()
+    let precio = $('#precioModal').val()
+    axios.get(`/editar?nombre=${nombre}&precio=${precio}`).then((data) => {
+      alert(data.data)
+      getData()
+    })
+    $('#exampleModal').modal('hide')
   }
 
-  function eliminar(id) {
-    axios.delete(`/deportes/${id}`)
-      .then(function (response) {
-        alert(response.data.message);
-        getData();
-      })
-      .catch(function (error) {
-        console.log(error);
-      });
+  function eliminar(nombre) {
+    axios.get(`/eliminar?nombre=${nombre}`).then((data) => {
+      alert(data.data)
+      getData()
+    })
+    $('#exampleModal').modal('hide')
   }
-
 </script>
 
 <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"

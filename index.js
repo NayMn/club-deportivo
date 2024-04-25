@@ -21,7 +21,7 @@ app.use(express.static(__dirname + '/public'));
 
 // ruta para crear nuevo deporte y guardarlo (CREATE )
 
-app.post("/deportes", async (req, res) => {
+app.post("/agregar", async (req, res) => {
     try {
         const nombre = req.body.nombre
         const precio = req.body.precio
@@ -66,43 +66,45 @@ app.get("/deportes", async (req, res) => {
 
 app.put("/deportes/:nombre", async (req, res) => {
     try {
-        const nombre = req.body.nombre
-        const precio = req.body.precio
+        const nombre = req.params.nombre;
+        const { precio } = req.body;
+
+        if (!precio) {
+            return res.status(400).json({ message: "El precio es obligatorio." });
+        }
 
         const stringDeportes = await readFile(pathFile, 'utf8');
         let deportes = JSON.parse(stringDeportes);
 
-        const index = deportes.findIndex(deportes => deportes.nombre === nombre);
+        const index = deportes.findIndex(deporte => deporte.nombre === nombre);
         if (index === -1) {
-            return res.status(404).json({ message: "deporte no encontrado" });
+            return res.status(404).json({ message: "Deporte no encontrado" });
         }
 
         deportes[index].precio = precio;
 
         await writeFile(pathFile, JSON.stringify(deportes));
+
         return res.json(deportes[index]);
 
     } catch (error) {
         console.error(error);
-        return res.status(500).json({ ok: false });
+        return res.status(500).json({ message: "Ocurrió un error al actualizar el precio del deporte." });
     }
 });
 
 
 
+
 // eliminar un deporte (delete)
-app.delete("/deportes/:id", async (req, res) => {
+app.delete("/deportes/:nombre", async (req, res) => {
     try {
-        const id = req.params.id
+        const nombre = req.params.nombre
+
         const stringDeportes = await readFile(pathFile, 'utf8')
         const deportes = JSON.parse(stringDeportes)
 
-        const buscar = deportes.find(item => item.id === id)
-        if (!buscar) {
-            return res.status(404).json({ ok: false })
-        }
-
-        const filtro = deportes.filter((item) => item.id !== id)
+        const filtro = deportes.filter(deporte => deporte.nombre !== nombre)
         await writeFile(pathFile, JSON.stringify(filtro))
 
         return res.json(filtro)
