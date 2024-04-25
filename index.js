@@ -62,58 +62,30 @@ app.get("/deportes", async (req, res) => {
 });
 
 
-// modificar precios (update)
-
-app.put("/deportes/:nombre", async (req, res) => {
+// eliminar
+app.get("/eliminar/", async (req, res) => {
     try {
         const nombre = req.params.nombre;
-        const { precio } = req.body;
-
-        if (!precio) {
-            return res.status(400).json({ message: "El precio es obligatorio." });
-        }
 
         const stringDeportes = await readFile(pathFile, 'utf8');
         let deportes = JSON.parse(stringDeportes);
 
-        const index = deportes.findIndex(deporte => deporte.nombre === nombre);
-        if (index === -1) {
+        const filtro = deportes.filter(deporte => deporte.nombre !== nombre);
+        if (filtro.length === deportes.length) {
             return res.status(404).json({ message: "Deporte no encontrado" });
         }
 
-        deportes[index].precio = precio;
+        await writeFile(pathFile, JSON.stringify(filtro));
 
-        await writeFile(pathFile, JSON.stringify(deportes));
-
-        return res.json(deportes[index]);
+        return res.json({ message: "Deporte eliminado correctamente", deportes: filtro });
 
     } catch (error) {
-        console.error(error);
-        return res.status(500).json({ message: "Ocurrió un error al actualizar el precio del deporte." });
+        console.log(error);
+        return res.status(500).json({ message: "Ocurrió un error al eliminar el deporte." });
     }
 });
 
 
-
-
-// eliminar un deporte (delete)
-app.delete("/deportes/:nombre", async (req, res) => {
-    try {
-        const nombre = req.params.nombre
-
-        const stringDeportes = await readFile(pathFile, 'utf8')
-        const deportes = JSON.parse(stringDeportes)
-
-        const filtro = deportes.filter(deporte => deporte.nombre !== nombre)
-        await writeFile(pathFile, JSON.stringify(filtro))
-
-        return res.json(filtro)
-
-    } catch (error) {
-        console.log(error)
-        return res.status(500).json({ ok: true })
-    }
-})
 
 
 const PORT = process.env.PORT || 5000
